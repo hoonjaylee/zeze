@@ -90,6 +90,23 @@ button{cursor:pointer;border:none;background:none}
 .fxt{display:flex;justify-content:space-between;padding:18px 0 4px;border-top:2px solid var(--tp);margin-top:12px;font-weight:800;font-size:16px}
 .add-btn-inline{font-size:14px;color:#fff;font-weight:700;padding:8px 18px;border-radius:12px;background:linear-gradient(135deg,var(--blue),#5B9CF6);box-shadow:0 2px 8px rgba(49,130,246,0.25);transition:all .2s}
 .add-btn-inline:active{transform:scale(.95);opacity:.9}
+.tx-toolbar{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.tx-search-wrap{display:flex;align-items:center;gap:8px;background:#FAFBFC;border:2px solid var(--divider);border-radius:12px;padding:0 14px;height:44px;transition:all .2s}
+.tx-search-wrap:focus-within{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px rgba(49,130,246,0.08)}
+.tx-search{flex:1;border:none;background:transparent;outline:none;font-size:14px;font-weight:500}
+.tx-sort-btns{display:flex;gap:6px}
+.tx-sort-btn{padding:6px 14px;border-radius:10px;font-size:12px;font-weight:700;background:var(--bg);color:var(--ts);border:1.5px solid transparent;transition:all .2s}
+.tx-sort-btn.on{background:var(--bl);color:var(--blue);border-color:var(--blue)}
+.tx-sort-btn:active{transform:scale(.95)}
+.stat-detail{overflow:hidden;max-height:0;transition:max-height .4s cubic-bezier(.16,1,.3,1);opacity:0}
+.stat-detail.open{max-height:600px;opacity:1;transition:max-height .4s cubic-bezier(.16,1,.3,1),opacity .3s}
+.stat-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.04);cursor:pointer;align-items:center}
+.stat-row:active{background:rgba(0,0,0,0.02);border-radius:8px}
+.stat-arrow{font-size:12px;color:var(--tt);transition:transform .3s;margin-left:8px}
+.stat-arrow.open{transform:rotate(180deg)}
+.stat-sub{display:flex;justify-content:space-between;padding:6px 0 6px 16px;font-size:13px}
+.stat-sub .sub-label{color:var(--ts);font-weight:500;display:flex;align-items:center;gap:6px}
+.stat-sub .sub-value{font-weight:700}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;opacity:0;visibility:hidden;transition:all .3s}
 .ov.sh{opacity:1;visibility:visible}
 .bs{position:fixed;bottom:0;left:0;right:0;z-index:201;background:var(--card);border-radius:24px 24px 0 0;padding:8px 28px calc(var(--sb)+28px);transform:translateY(100%);transition:transform .4s cubic-bezier(.32,.72,0,1);max-height:88dvh;overflow-y:auto}
@@ -201,7 +218,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 <div class="pg" id="p1">
   <div class="cr" id="tFC"></div>
   <div class="cd" id="tBC" style="padding:20px"></div>
-  <div class="cd" style="padding:14px 18px"><div class="ch"><div class="ct" id="tLTitle">내역</div><button onclick="oAS()" class="add-btn-inline">+ 추가</button></div><div id="tL"></div></div>
+  <div class="cd" style="padding:14px 18px"><div class="ch"><div class="ct" id="tLTitle">내역</div><button onclick="oAS()" class="add-btn-inline">+ 추가</button></div><div class="tx-toolbar"><div class="tx-search-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tt)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="txSearch" class="tx-search" placeholder="내역 검색..." oninput="rTL()"></div><div class="tx-sort-btns"><button class="tx-sort-btn on" id="sortDate" onclick="setSort('date')">날짜순</button><button class="tx-sort-btn" id="sortAmt" onclick="setSort('amount')">금액순</button></div></div><div id="tL"></div></div>
 </div>
 <div class="pg" id="p2">
   <div class="cd">
@@ -278,7 +295,7 @@ function gT(m){return TM[m]||'e'}
 function gTI(t){return{i:'💰',e:'💳',s:'🏦',f:'📌'}[t]||'💳'}
 
 let allTx=[],allFx=[],catMap={},pmList=[],memoMap={};
-let cm=2,eTx=null,eFx=null,cTT=null,tF='전체',cWr='졔';
+let cm=2,eTx=null,eFx=null,cTT=null,tF='전체',cWr='졔',txSort='date';
 
 function txByMonth(m){return allTx.filter(t=>t.month===m)}
 function fm(n){return n.toLocaleString('ko-KR')}
@@ -364,13 +381,18 @@ function rTB(){
     }
   }
   cd.innerHTML=html}
+function setSort(s){txSort=s;document.getElementById('sortDate').className='tx-sort-btn'+(s==='date'?' on':'');document.getElementById('sortAmt').className='tx-sort-btn'+(s==='amount'?' on':'');rTL()}
 function rTL(){
   let tx=txByMonth(cm),fl=tx;
   if(tF==='수입')fl=tx.filter(t=>gT(t.mj)==='i');else if(tF==='지출')fl=tx.filter(t=>gT(t.mj)==='e');else if(tF==='저축')fl=tx.filter(t=>gT(t.mj)==='s');
-  fl=[...fl].sort((a,b)=>b.dt.localeCompare(a.dt)||b.id-a.id);
+  const sq=(document.getElementById('txSearch')||{}).value||'';
+  if(sq.trim()){const q=sq.trim().toLowerCase();fl=fl.filter(t=>(t.d||'').toLowerCase().includes(q)||(t.mj||'').toLowerCase().includes(q)||(t.mn||'').toLowerCase().includes(q)||(t.mt||'').toLowerCase().includes(q))}
+  if(txSort==='amount')fl=[...fl].sort((a,b)=>b.a-a.a);
+  else fl=[...fl].sort((a,b)=>b.dt.localeCompare(a.dt)||b.id-a.id);
   const titleEl=document.getElementById('tLTitle');if(titleEl)titleEl.textContent='내역 '+fl.length+'건';
-  if(!fl.length){document.getElementById('tL').innerHTML='<div class="es"><div class="ic">📝</div><p>내역이 없어요<br>위 + 추가 버튼으로 추가해보세요</p></div>';return}
-  let h='',ld='';fl.forEach(t=>{if(t.dt!==ld){ld=t.dt;h+='<div class="tgd">'+ds(t.dt)+'</div>'}h+=tH(t,1)});document.getElementById('tL').innerHTML=h}
+  if(!fl.length){document.getElementById('tL').innerHTML='<div class="es"><div class="ic">📝</div><p>'+(sq.trim()?'검색 결과가 없어요':'내역이 없어요<br>위 + 추가 버튼으로 추가해보세요')+'</p></div>';return}
+  if(txSort==='amount'){let h='';fl.forEach(t=>{h+=tH(t,1)});document.getElementById('tL').innerHTML=h}
+  else{let h='',ld='';fl.forEach(t=>{if(t.dt!==ld){ld=t.dt;h+='<div class="tgd">'+ds(t.dt)+'</div>'}h+=tH(t,1)});document.getElementById('tL').innerHTML=h}}
 function tH(t,cl){const tp=gT(t.mj),ic=tp==='i'?'ii':tp==='s'?'si2':tp==='f'?'fi':'ei',vc=tp==='i'?'pl':'mn2',pf=tp==='i'?'+':'-',oc=cl?'onclick="oET('+t.id+')"':'',wr=t.w?'<span style="font-size:10px;margin-left:4px;opacity:0.6">'+(t.w==='졔'?'👩':'👨')+'</span>':'';return'<div class="txi" '+oc+'><div class="txic '+ic+'">'+gTI(tp)+'</div><div class="txin"><div class="txnm">'+((t.d||t.mj)+wr)+'</div><div class="txsb">'+t.mj+' · '+(t.mn||'')+'</div></div><div class="txa"><div class="v '+vc+'">'+pf+fm(t.a)+'</div><div class="mt">'+(t.mt||'')+'</div></div></div>'}
 function sTF(f){tF=f;rTP()}
 
@@ -457,7 +479,35 @@ async function dPM(n){
 function rSt(){rAC();rASm();rACL()}
 function sST(i,e){document.querySelectorAll('.ptb').forEach(t=>t.classList.remove('on'));e.classList.add('on');document.getElementById('sp0').style.display=i===0?'block':'none';document.getElementById('sp1').style.display=i===1?'block':'none'}
 function rAC(){let mx=0;const sm=[];for(let m=1;m<=12;m++){const s=gMS(m);sm.push(s);mx=Math.max(mx,s.i,s.e,s.s)}mx=mx||1;document.getElementById('aBC').innerHTML=sm.map((s,i)=>'<div class="bg2" style="opacity:'+((i+1)===cm?1:.4)+'"><div class="bsk"><div class="b2 bi" style="height:'+Math.max(2,s.i/mx*140)+'px;transition:height .6s cubic-bezier(.16,1,.3,1) '+(i*30)+'ms"></div><div class="b2 be" style="height:'+Math.max(2,s.e/mx*140)+'px;transition:height .6s cubic-bezier(.16,1,.3,1) '+(i*30+100)+'ms"></div><div class="b2 bs2" style="height:'+Math.max(2,s.s/mx*140)+'px;transition:height .6s cubic-bezier(.16,1,.3,1) '+(i*30+200)+'ms"></div></div><div class="blb">'+(i+1)+'월</div></div>').join('')}
-function rASm(){let ti=0,te=0,ts=0;for(let m=1;m<=12;m++){const s=gMS(m);ti+=s.i;te+=s.e;ts+=s.s}document.getElementById('aS').innerHTML='<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.04)"><span style="color:var(--ts);font-weight:500">총 수입</span><span style="font-weight:800;color:var(--blue)">'+fw(ti)+'</span></div><div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.04)"><span style="color:var(--ts);font-weight:500">총 지출</span><span style="font-weight:800;color:var(--red)">'+fw(te)+'</span></div><div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.04)"><span style="color:var(--ts);font-weight:500">총 저축</span><span style="font-weight:800;color:var(--green)">'+fw(ts)+'</span></div><div style="display:flex;justify-content:space-between;padding:10px 0"><span style="color:var(--ts);font-weight:500">저축률</span><span style="font-weight:800">'+(ti>0?Math.round(ts/ti*100):0)+'%</span></div>'}
+function rASm(){
+  let ti=0,te=0,ts=0,wI=0,hI=0,oI=0;
+  const pmTot={},svDet={};
+  for(let m=1;m<=12;m++){
+    const s=gMS(m);ti+=s.i;te+=s.e;ts+=s.s;
+    txByMonth(m).forEach(t=>{
+      const tp=gT(t.mj);
+      if(tp==='i'){const isEtc=t.mn&&t.mn.includes('기타');if(isEtc)oI+=t.a;else if(t.w==='졔')wI+=t.a;else hI+=t.a}
+      if(tp==='e'){const k=t.mt||'미지정';pmTot[k]=(pmTot[k]||0)+t.a}
+      if(tp==='s'){const k=t.mn||t.mj;svDet[k]=(svDet[k]||0)+t.a}
+    });
+    allFx.forEach(f=>{const k=f.m||'미지정';pmTot[k]=(pmTot[k]||0)+f.a});
+  }
+  const pmSorted=Object.entries(pmTot).sort((a,b)=>b[1]-a[1]);
+  const svSorted=Object.entries(svDet).sort((a,b)=>b[1]-a[1]);
+  function mkRow(label,value,color,detailId,detailHtml){
+    return '<div><div class="stat-row" onclick="toggleStatDetail(\''+detailId+'\')"><span style="color:var(--ts);font-weight:500">'+label+'</span><div style="display:flex;align-items:center"><span style="font-weight:800;color:'+color+'">'+fw(value)+'</span><span class="stat-arrow" id="arrow_'+detailId+'">▼</span></div></div><div class="stat-detail" id="'+detailId+'">'+detailHtml+'</div></div>'
+  }
+  let incDetail='<div class="stat-sub"><span class="sub-label">👩 졔 수입</span><span class="sub-value" style="color:var(--blue)">'+fw(wI)+'</span></div><div class="stat-sub"><span class="sub-label">👨 훈 수입</span><span class="sub-value" style="color:var(--blue)">'+fw(hI)+'</span></div>';
+  if(oI>0)incDetail+='<div class="stat-sub"><span class="sub-label">💫 기타 수입</span><span class="sub-value" style="color:var(--blue)">'+fw(oI)+'</span></div>';
+  let expDetail=pmSorted.map(([n,v])=>'<div class="stat-sub"><span class="sub-label"><span style="width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block"></span>'+n+'</span><span class="sub-value">'+fw(v)+'</span></div>').join('');
+  let savDetail=svSorted.map(([n,v])=>'<div class="stat-sub"><span class="sub-label"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>'+n+'</span><span class="sub-value" style="color:var(--green)">'+fw(v)+'</span></div>').join('')||'<div class="stat-sub"><span class="sub-label" style="color:var(--tt)">내역 없음</span><span></span></div>';
+  document.getElementById('aS').innerHTML=
+    mkRow('총 수입',ti,'var(--blue)','det_inc',incDetail)+
+    mkRow('총 지출',te,'var(--red)','det_exp',expDetail)+
+    mkRow('총 저축',ts,'var(--green)','det_sav',savDetail)+
+    '<div style="display:flex;justify-content:space-between;padding:10px 0"><span style="color:var(--ts);font-weight:500">저축률</span><span style="font-weight:800">'+(ti>0?Math.round(ts/ti*100):0)+'%</span></div>'
+}
+function toggleStatDetail(id){const el=document.getElementById(id),ar=document.getElementById('arrow_'+id);if(!el)return;el.classList.toggle('open');ar&&ar.classList.toggle('open')}
 function rACL(){const ct={},sv={};for(let m=1;m<=12;m++){txByMonth(m).forEach(t=>{if(gT(t.mj)==='e')ct[t.mj]=(ct[t.mj]||0)+t.a;if(gT(t.mj)==='s'){const k=t.mn||t.mj;sv[k]=(sv[k]||0)+t.a}});ct['고정지출']=(ct['고정지출']||0)+allFx.reduce((s,f)=>s+f.a,0)}const sr=Object.entries(ct).sort((a,b)=>b[1]-a[1]),tot=sr.reduce((s,[,v])=>s+v,0);const svr=Object.entries(sv).sort((a,b)=>b[1]-a[1]),svTot=svr.reduce((s,[,v])=>s+v,0);
   let html='<div style="margin-bottom:24px"><div class="ct" style="margin-bottom:14px">💰 연간 저축 · '+fw(svTot)+'</div>';
   html+=svr.map(([n,v],i)=>'<div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.04)"><div style="width:10px;height:10px;border-radius:50%;background:'+['#00C48C','#34D399','#6EE7B7','#A7F3D0','#D1FAE5'][i%5]+';margin-right:12px;flex-shrink:0"></div><div style="flex:1;font-size:14px;font-weight:600">'+n+'</div><div style="text-align:right"><div style="font-size:14px;font-weight:800;color:var(--green)">'+fw(v)+'</div><div style="font-size:11px;color:var(--tt);font-weight:600">'+pc(v,svTot)+'%</div></div></div>').join('')||'<div class="es"><p>저축 내역이 없어요</p></div>';
