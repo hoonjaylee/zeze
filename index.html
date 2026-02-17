@@ -88,8 +88,8 @@ button{cursor:pointer;border:none;background:none}
 .fxin{flex:1}.fxnm{font-size:15px;font-weight:600}.fxct{font-size:12px;color:var(--tt);margin-top:2px;font-weight:500}
 .fxam{font-size:15px;font-weight:800}
 .fxt{display:flex;justify-content:space-between;padding:18px 0 4px;border-top:2px solid var(--tp);margin-top:12px;font-weight:800;font-size:16px}
-.fab{position:fixed;bottom:calc(var(--th)+var(--sb)+20px);right:24px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#5B9CF6);color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(49,130,246,0.45);z-index:99}
-.fab:active{transform:scale(.88)}
+.add-btn-inline{font-size:14px;color:#fff;font-weight:700;padding:8px 18px;border-radius:12px;background:linear-gradient(135deg,var(--blue),#5B9CF6);box-shadow:0 2px 8px rgba(49,130,246,0.25);transition:all .2s}
+.add-btn-inline:active{transform:scale(.95);opacity:.9}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;opacity:0;visibility:hidden;transition:all .3s}
 .ov.sh{opacity:1;visibility:visible}
 .bs{position:fixed;bottom:0;left:0;right:0;z-index:201;background:var(--card);border-radius:24px 24px 0 0;padding:8px 28px calc(var(--sb)+28px);transform:translateY(100%);transition:transform .4s cubic-bezier(.32,.72,0,1);max-height:88dvh;overflow-y:auto}
@@ -196,12 +196,12 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
   </div>
   <div class="cd"><div class="ct">지출 카테고리 TOP</div><div class="dw"><svg class="dc" id="dC" viewBox="0 0 120 120"></svg><div class="dl" id="dL"></div></div></div>
   <div class="memo-card"><div class="memo-label">이달의 메모</div><textarea id="memoArea" placeholder="이번 달 목표나 메모를 적어보세요..." oninput="saveMemoDebounced()"></textarea></div>
-  <div class="cd"><div class="ct">최근 내역</div><div id="rL"></div></div>
+  <div class="cd"><div class="ch"><div class="ct">최근 내역</div><button onclick="oAS()" class="add-btn-inline">+ 추가</button></div><div id="rL"></div></div>
 </div>
 <div class="pg" id="p1">
   <div class="cr" id="tFC"></div>
   <div class="cd" id="tBC" style="padding:20px"></div>
-  <div class="cd" style="padding:14px 18px"><div id="tL"></div></div>
+  <div class="cd" style="padding:14px 18px"><div class="ch"><div class="ct" id="tLTitle">내역</div><button onclick="oAS()" class="add-btn-inline">+ 추가</button></div><div id="tL"></div></div>
 </div>
 <div class="pg" id="p2">
   <div class="cd">
@@ -233,7 +233,6 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
   <button class="ti" onclick="sP('p3',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>통계</span></button>
   <button class="ti" onclick="sP('p4',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>설정</span></button>
 </nav>
-<button class="fab" id="fab" onclick="oAS()">+</button>
 <div class="ov" id="ov" onclick="cS()"></div>
 <div class="bs" id="as">
   <div class="bsh"></div><div class="bst" id="asT">내역 추가</div>
@@ -315,7 +314,7 @@ async function syncFromDB(){
   toast('동기화 완료 ✅');
 }
 // ===== NAV =====
-function sP(id,el){document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));document.getElementById(id).classList.add('on');document.querySelectorAll('.ti').forEach(t=>t.classList.remove('on'));el.classList.add('on');document.getElementById('fab').style.display=['p4','p3','p2'].includes(id)?'none':'flex';rF(id)}
+function sP(id,el){document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));document.getElementById(id).classList.add('on');document.querySelectorAll('.ti').forEach(t=>t.classList.remove('on'));el.classList.add('on');rF(id)}
 function rF(id){({p0:rDB,p1:rTP,p2:rFL,p3:rSt,p4:rSe})[id]?.()}
 function cM(d){cm=Math.max(1,Math.min(12,cm+d));document.getElementById('mL').textContent=cm+'월';rF(document.querySelector('.pg.on').id)}
 function rC(){rF(document.querySelector('.pg.on').id)}
@@ -369,7 +368,8 @@ function rTL(){
   let tx=txByMonth(cm),fl=tx;
   if(tF==='수입')fl=tx.filter(t=>gT(t.mj)==='i');else if(tF==='지출')fl=tx.filter(t=>gT(t.mj)==='e');else if(tF==='저축')fl=tx.filter(t=>gT(t.mj)==='s');
   fl=[...fl].sort((a,b)=>b.dt.localeCompare(a.dt)||b.id-a.id);
-  if(!fl.length){document.getElementById('tL').innerHTML='<div class="es"><div class="ic">📝</div><p>내역이 없어요<br>+ 버튼으로 추가해보세요</p></div>';return}
+  const titleEl=document.getElementById('tLTitle');if(titleEl)titleEl.textContent='내역 '+fl.length+'건';
+  if(!fl.length){document.getElementById('tL').innerHTML='<div class="es"><div class="ic">📝</div><p>내역이 없어요<br>위 + 추가 버튼으로 추가해보세요</p></div>';return}
   let h='',ld='';fl.forEach(t=>{if(t.dt!==ld){ld=t.dt;h+='<div class="tgd">'+ds(t.dt)+'</div>'}h+=tH(t,1)});document.getElementById('tL').innerHTML=h}
 function tH(t,cl){const tp=gT(t.mj),ic=tp==='i'?'ii':tp==='s'?'si2':tp==='f'?'fi':'ei',vc=tp==='i'?'pl':'mn2',pf=tp==='i'?'+':'-',oc=cl?'onclick="oET('+t.id+')"':'',wr=t.w?'<span style="font-size:10px;margin-left:4px;opacity:0.6">'+(t.w==='졔'?'👩':'👨')+'</span>':'';return'<div class="txi" '+oc+'><div class="txic '+ic+'">'+gTI(tp)+'</div><div class="txin"><div class="txnm">'+((t.d||t.mj)+wr)+'</div><div class="txsb">'+t.mj+' · '+(t.mn||'')+'</div></div><div class="txa"><div class="v '+vc+'">'+pf+fm(t.a)+'</div><div class="mt">'+(t.mt||'')+'</div></div></div>'}
 function sTF(f){tF=f;rTP()}
